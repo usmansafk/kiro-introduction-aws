@@ -1,0 +1,72 @@
+{
+  "canvas": {
+    "width": 400,
+    "height": 600
+  },
+  "physics": {
+    "gravity": 800,
+    "jumpVelocity": -300,
+    "terminalVelocity": 600,
+    "maxUpwardVelocity": -600
+  },
+  "ghost": {
+    "x": 100,
+    "y": 300,
+    "width": 34,
+    "height": 24,
+    "hitboxWidth": 28,
+    "hitboxHeight": 20,
+    "hitboxOffsetX": 3,
+    "hitboxOffsetY": 2,
+    "spritePath": "/Users/usman.sajid/Documents/kiro-introduction/assets/ghosty.png"
+  },
+  "pipes": {
+    "width": 52,
+    "spacing": 350,
+    "gapSize": 140,
+    "minGapY": 100,
+    "maxGapY": 500,
+    "baseSpeed": 120,
+    "maxSpeed": 240,
+    "speedIncreaseThreshold": 5,
+    "speedIncrement": 10
+  },
+  "collision": {
+    "invincibilityDuration": 120,
+    "screenShakeIntensity": 10,
+    "screenShakeDuration": 30
+  },
+  "particles": {
+    "spawnChance": 0.3,
+    "maxActive": 50,
+    "minSize": 2,
+    "maxSize": 5,
+    "decay": 0.02,
+    "velocityRange": 2
+  },
+  "scoreIndicators": {
+    "floatSpeed": -1,
+    "decay": 0.03,
+    "fontSize": 24,
+    "color": "#FFD700"
+  },
+  "visual": {
+    "backgroundColor": "#87CEEB",
+    "pipeColor": "#00AA00",
+    "pipeCapColor": "#00CC00",
+    "textColor": "#000000",
+    "overlayColor": "rgba(0, 0, 0, 0.5)"
+  },
+  "audio": {
+    "defaultVolume": 1.0,
+    "jumpSound": "assets/jump.wav",
+    "gameOverSound": "assets/game_over.wav"
+  },
+  "storage": {
+    "highScoreKey": "flappyKiroHighScore"
+  },
+  "performance": {
+    "targetFPS": 120,
+    "maxDeltaTime": 2.0
+  }
+}
