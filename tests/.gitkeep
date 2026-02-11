@@ -1,0 +1,5 @@
+# Tests directory
+# Test files will be organized as:
+# - unit/ (unit tests)
+# - property/ (property-based tests)
+# - integration/ (integration tests)

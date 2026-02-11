@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghost Physics Property Tests - Flappy Kiro</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #252526;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      color: #4ec9b0;
+      border-bottom: 2px solid #4ec9b0;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #569cd6;
+      margin-top: 30px;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 12px;
+      border-left: 4px solid #ccc;
+      background-color: #2d2d30;
+      border-radius: 4px;
+    }
+    .test-result.pass {
+      border-left-color: #4ec9b0;
+      background-color: #1e3a32;
+    }
+    .test-result.fail {
+      border-left-color: #f48771;
+      background-color: #3a1e1e;
+    }
+    .test-name {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .test-details {
+      font-size: 12px;
+      color: #858585;
+      margin-top: 5px;
+    }
+    .summary {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #2d2d30;
+      border-radius: 8px;
+      border: 2px solid #4ec9b0;
+    }
+    .summary.has-failures {
+      border-color: #f48771;
+    }
+    .summary h3 {
+      margin-top: 0;
+      color: #4ec9b0;
+    }
+    .summary.has-failures h3 {
+      color: #f48771;
+    }
+    .stats {
+      display: flex;
+      gap: 30px;
+      margin-top: 15px;
+    }
+    .stat {
+      font-size: 18px;
+    }
+    .stat-label {
+      color: #858585;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .stat-value {
+      font-weight: bold;
+      font-size: 24px;
+    }
+    .pass-value {
+      color: #4ec9b0;
+    }
+    .fail-value {
+      color: #f48771;
+    }
+    .progress {
+      margin: 20px 0;
+      font-size: 14px;
+      color: #858585;
+    }
+    .requirement {
+      display: inline-block;
+      background-color: #3a3d41;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-right: 5px;
+      color: #ce9178;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Ghost Physics Property Tests</h1>
+    <p>Property-based testing for Ghost entity physics system</p>
+    <p><strong>Feature:</strong> flappy-kiro | <strong>Validates:</strong> 
+      <span class="requirement">Req 1.1.2</span>
+      <span class="requirement">Req 1.2</span>
+      <span class="requirement">Req 1.1.3</span>
+      <span class="requirement">Req 1.1.4</span>
+      <span class="requirement">Req 1.1.5</span>
+      <span class="requirement">Req 1.1.6</span>
+    </p>
+    
+    <div class="progress" id="progress">Initializing tests...</div>
+    <div id="testResults"></div>
+    <div id="summary"></div>
+  </div>
+  
+  <script type="module">
+    import Ghost from '../../js/entities/ghost.js';
+    import GameConfig from '../../js/config.js';
+    
+    const resultsDiv = document.getElementById('testResults');
+    const summaryDiv = document.getElementById('summary');
+    const progressDiv = document.getElementById('progress');
+    
+    let testsPassed = 0;
+    let testsFailed = 0;
+    let totalTests = 0;
+    
+    // Simple property-based testing utilities
+    class PropertyTest {
+      static float(min, max) {
+        return () => Math.random() * (max - min) + min;
+      }
+      
+      static integer(min, max) {
+        return () => Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      
+      static assert(property, options = {}) {
+        const numRuns = options.numRuns || 100;
+        const generators = property.generators;
+        const test = property.test;
+        
+        for (let i = 0; i < numRuns; i++) {
+          const args = generators.map(gen => gen());
+          try {
+            test(...args);
+          } catch (error) {
+            throw new Error(`Failed on run ${i + 1}/${numRuns} with args: ${JSON.stringify(args)}\n${error.message}`);
+          }
+        }
+      }
+    }
+    
+    function addTestResult(testName, passed, details = '', requirement = '') {
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      
+      const icon = passed ? '✓' : '✗';
+      const reqBadge = requirement ? `<span class="requirement">${requirement}</span>` : '';
+      
+      resultDiv.innerHTML = `
+        <div class="test-name">${icon} ${testName} ${reqBadge}</div>
+        ${details ? `<div class="test-details">${details}</div>` : ''}
+      `;
+      resultsDiv.appendChild(resultDiv);
+      
+      if (passed) testsPassed++;
+      else testsFailed++;
+      totalTests++;
+    }
+    
+    function updateProgress(message) {
+      progressDiv.textContent = message;
+    }
+    
+    function assertEqual(actual, expected, tolerance = 0.00001) {
+      if (typeof actual === 'number' && typeof expected === 'number') {
+        if (Math.abs(actual - expected) > tolerance) {
+          throw new Error(`Expected ${expected}, got ${actual}`);
+        }
+      } else if (actual !== expected) {
+        throw new Error(`Expected ${expected}, got ${actual}`);
+      }
+    }
+    
+    function assertTrue(condition, message = '') {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+    
+    function assertGreaterThan(actual, expected) {
+      if (actual <= expected) {
+        throw new Error(`Expected ${actual} > ${expected}`);
+      }
+    }
+    
+    function assertLessThan(actual, expected) {
+      if (actual >= expected) {
+        throw new Error(`Expected ${actual} < ${expected}`);
+      }
+    }
+    
+    function assertGreaterThanOrEqual(actual, expected) {
+      if (actual < expected) {
+        throw new Error(`Expected ${actual} >= ${expected}`);
+      }
+    }
+    
+    function assertLessThanOrEqual(actual, expected) {
+      if (actual > expected) {
+        throw new Error(`Expected ${actual} <= ${expected}`);
+      }
+    }
+    
+    // Create mock sprite
+    const mockSprite = {
+      width: 34,
+      height: 24
+    };
+    
+    // Run tests
+    async function runTests() {
+      updateProgress('Running Property 1: Jump input sets upward velocity...');
+      
+      // Property 1: Jump input sets upward velocity
+      try {
+        PropertyTest.assert({
+          generators: [
+            PropertyTest.float(-20, 20),  // Initial velocity
+            PropertyTest.float(50, 400)   // Initial Y position
+          ],
+          test: (initialVelocity, initialY) => {
+            const ghost = new Ghost(100, initialY, mockSprite);
+            ghost.velocity = initialVelocity;
+            const jumpVelocity = GameConfig.physics.jumpVelocity;
+            
+            ghost.jump(jumpVelocity);
+            
+            assertEqual(ghost.velocity, jumpVelocity);
+            assertLessThan(jumpVelocity, 0);
+          }
+        }, { numRuns: 100 });
+        
+        addTestResult(
+          'Property 1: Jump input sets upward velocity',
+          true,
+          'Tested with 100 random initial velocities and positions',
+          'Req 1.1.2'
+        );
+      } catch (error) {
+        addTestResult(
+          'Property 1: Jump input sets upward velocity',
+          false,
+          error.message,
+          'Req 1.1.2'
+        );
+      }
+      
+      updateProgress('Running Property 2: Gravity continuously accelerates ghost downward...');
+      
+      // Property 2: Gravity continuously accelerates ghost downward
+      try {
+        PropertyTest.assert({
+          generators: [
+            PropertyTest.float(-10, 10),  // Initial velocity
+            PropertyTest.float(0.5, 2.0)  // Delta time
+          ],
+          test: (initialVelocity, deltaTime) => {
+            const ghost = new Ghost(100, 200, mockSprite);
+            ghost.velocity = initialVelocity;
+            const gravity = GameConfig.physics.gravity;
+            const terminalVelocity = GameConfig.physics.terminalVelocity;
+            const maxUpwardVelocity = GameConfig.physics.maxUpwardVelocity;
+            
+            const velocityBefore = ghost.velocity;
+            ghost.update(deltaTime, gravity, terminalVelocity, maxUpwardVelocity);
+            
+            if (velocityBefore < terminalVelocity) {
+              assertGreaterThan(ghost.velocity, velocityBefore);
+            }
+          }
+        }, { numRuns: 100 });
+        
+        addTestResult(
+          'Property 2: Gravity continuously accelerates ghost downward',
+          true,
+          'Tested with 100 random velocities and delta times',
+          'Req 1.2, 1.1.3'
+        );
+      } catch (error) {
+        addTestResult(
+          'Property 2: Gravity continuously accelerates ghost downward',
+          false,
+          error.message,
+          'Req 1.2, 1.1.3'
+        );
+      }
+      
+      updateProgress('Running Property 3: Terminal velocity limits falling speed...');
+      
+      // Property 3: Terminal velocity limits falling speed
+      try {
+        PropertyTest.assert({
+          generators: [
+            PropertyTest.float(12, 50),   // Velocity above terminal
+            PropertyTest.float(0.5, 2.0)  // Delta time
+          ],
+          test: (excessiveVelocity, deltaTime) => {
+            const ghost = new Ghost(100, 200, mockSprite);
+            ghost.velocity = excessiveVelocity;
+            const gravity = GameConfig.physics.gravity;
+            const terminalVelocity = GameConfig.physics.terminalVelocity;
+            const maxUpwardVelocity = GameConfig.physics.maxUpwardVelocity;
+            
+            ghost.update(deltaTime, gravity, terminalVelocity, maxUpwardVelocity);
+            
+            assertLessThanOrEqual(ghost.velocity, terminalVelocity);
+            assertEqual(ghost.velocity, terminalVelocity);
+          }
+        }, { numRuns: 100 });
+        
+        addTestResult(
+          'Property 3: Terminal velocity limits falling speed',
+          true,
+          'Tested with 100 random excessive velocities',
+          'Req 1.1.4'
+        );
+      } catch (error) {
+        addTestResult(
+          'Property 3: Terminal velocity limits falling speed',
+          false,
+          error.message,
+          'Req 1.1.4'
+        );
+      }
+      
+      updateProgress('Running Property 4: Maximum upward velocity limits ascending speed...');
+      
+      // Property 4: Maximum upward velocity limits ascending speed
+      try {
+        PropertyTest.assert({
+          generators: [
+            PropertyTest.float(-50, -12), // Velocity more negative than max upward
+            PropertyTest.float(0.5, 2.0)  // Delta time
+          ],
+          test: (excessiveUpwardVelocity, deltaTime) => {
+            const ghost = new Ghost(100, 200, mockSprite);
+            ghost.velocity = excessiveUpwardVelocity;
+            const gravity = GameConfig.physics.gravity;
+            const terminalVelocity = GameConfig.physics.terminalVelocity;
+            const maxUpwardVelocity = GameConfig.physics.maxUpwardVelocity;
+            
+            ghost.update(deltaTime, gravity, terminalVelocity, maxUpwardVelocity);
+            
+            assertGreaterThanOrEqual(ghost.velocity, maxUpwardVelocity);
+            assertEqual(ghost.velocity, maxUpwardVelocity);
+          }
+        }, { numRuns: 100 });
+        
+        addTestResult(
+          'Property 4: Maximum upward velocity limits ascending speed',
+          true,
+          'Tested with 100 random excessive upward velocities',
+          'Req 1.1.5'
+        );
+      } catch (error) {
+        addTestResult(
+          'Property 4: Maximum upward velocity limits ascending speed',
+          false,
+          error.message,
+          'Req 1.1.5'
+        );
+      }
+      
+      updateProgress('Running Property 5: Position updates by velocity integration...');
+      
+      // Property 5: Position updates by velocity integration
+      try {
+        PropertyTest.assert({
+          generators: [
+            PropertyTest.float(-10, 10),  // Velocity
+            PropertyTest.float(0.5, 2.0), // Delta time
+            PropertyTest.float(100, 500)  // Initial Y position
+          ],
+          test: (velocity, deltaTime, initialY) => {
+            const ghost = new Ghost(100, initialY, mockSprite);
+            ghost.velocity = velocity;
+            const gravity = 0; // No gravity for pure position test
+            const terminalVelocity = GameConfig.physics.terminalVelocity;
+            const maxUpwardVelocity = GameConfig.physics.maxUpwardVelocity;
+            
+            const yBefore = ghost.y;
+            ghost.update(deltaTime, gravity, terminalVelocity, maxUpwardVelocity);
+            
+            const expectedYChange = velocity * deltaTime;
+            const actualYChange = ghost.y - yBefore;
+            
+            assertEqual(actualYChange, expectedYChange, 0.00001);
+          }
+        }, { numRuns: 100 });
+        
+        addTestResult(
+          'Property 5: Position updates by velocity integration',
+          true,
+          'Tested with 100 random velocities, delta times, and positions',
+          'Req 1.1.6'
+        );
+      } catch (error) {
+        addTestResult(
+          'Property 5: Position updates by velocity integration',
+          false,
+          error.message,
+          'Req 1.1.6'
+        );
+      }
+      
+      updateProgress('Tests complete!');
+      
+      // Display summary
+      const hasFailures = testsFailed > 0;
+      summaryDiv.className = `summary ${hasFailures ? 'has-failures' : ''}`;
+      summaryDiv.innerHTML = `
+        <h3>${hasFailures ? '❌ Some Tests Failed' : '✅ All Tests Passed'}</h3>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Passed</div>
+            <div class="stat-value pass-value">${testsPassed}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Failed</div>
+            <div class="stat-value fail-value">${testsFailed}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Total</div>
+            <div class="stat-value">${totalTests}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Iterations per test</div>
+            <div class="stat-value">100</div>
+          </div>
+        </div>
+        <p style="margin-top: 20px; color: #858585;">
+          Each property was tested with 100 randomized inputs to verify correctness across the input space.
+        </p>
+      `;
+    }
+    
+    // Run tests when page loads
+    runTests().catch(error => {
+      console.error('Test execution failed:', error);
+      progressDiv.textContent = `Error: ${error.message}`;
+      progressDiv.style.color = '#f48771';
+    });
+  </script>
+</body>
+</html>

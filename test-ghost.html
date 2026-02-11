@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Ghost Class - Flappy Kiro</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #333;
+      background-color: #87CEEB;
+    }
+    .info {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 10px;
+      background-color: white;
+      border-radius: 5px;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+    .test-result {
+      margin: 5px 0;
+      padding: 5px;
+      border-left: 3px solid #ccc;
+      padding-left: 10px;
+    }
+    .test-result.pass {
+      border-left-color: green;
+      background-color: #e8f5e9;
+    }
+    .test-result.fail {
+      border-left-color: red;
+      background-color: #ffebee;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    <h2>Ghost Class Test</h2>
+    <p>Testing Ghost entity implementation:</p>
+    <div id="testResults"></div>
+  </div>
+  
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  
+  <script type="module">
+    import Ghost from './js/entities/ghost.js';
+    import GameConfig from './js/config.js';
+    
+    const resultsDiv = document.getElementById('testResults');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let testsPassed = 0;
+    let testsFailed = 0;
+    
+    function addTestResult(testName, passed, details = '') {
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      resultDiv.innerHTML = `
+        <strong>${passed ? '✓' : '✗'} ${testName}</strong>
+        ${details ? `<br><small>${details}</small>` : ''}
+      `;
+      resultsDiv.appendChild(resultDiv);
+      
+      if (passed) testsPassed++;
+      else testsFailed++;
+    }
+    
+    function assertEqual(actual, expected, testName) {
+      const passed = actual === expected;
+      addTestResult(testName, passed, passed ? '' : `Expected: ${expected}, Got: ${actual}`);
+      return passed;
+    }
+    
+    function assertTrue(condition, testName, details = '') {
+      addTestResult(testName, condition, details);
+      return condition;
+    }
+    
+    // Create a mock sprite
+    const mockSprite = new Image();
+    mockSprite.width = 34;
+    mockSprite.height = 24;
+    
+    try {
+      // Test 1: Constructor initialization
+      const ghost = new Ghost(100, 200, mockSprite);
+      assertEqual(ghost.x, 100, 'Ghost initializes with correct X position');
+      assertEqual(ghost.y, 200, 'Ghost initializes with correct Y position');
+      assertEqual(ghost.velocity, 0, 'Ghost initializes with zero velocity');
+      assertEqual(ghost.rotation, 0, 'Ghost initializes with zero rotation');
+      assertEqual(ghost.width, GameConfig.ghost.width, 'Ghost has correct width from config');
+      assertEqual(ghost.height, GameConfig.ghost.height, 'Ghost has correct height from config');
+      assertTrue(ghost.sprite === mockSprite, 'Ghost stores sprite reference');
+      
+      // Test 2: Hitbox
+      assertTrue(
+        ghost.hitbox.width < ghost.width,
+        'Hitbox is smaller than sprite (forgiving collision)',
+        `Hitbox: ${ghost.hitbox.width}, Sprite: ${ghost.width}`
+      );
+      
+      const hitbox = ghost.getHitbox();
+      assertEqual(
+        hitbox.x,
+        100 + GameConfig.ghost.hitboxOffsetX,
+        'getHitbox() returns correct X position'
+      );
+      assertEqual(
+        hitbox.y,
+        200 + GameConfig.ghost.hitboxOffsetY,
+        'getHitbox() returns correct Y position'
+      );
+      
+      // Test 3: Jump
+      ghost.jump(-10);
+      assertEqual(ghost.velocity, -10, 'jump() sets velocity correctly');
+      
+      // Test 4: Update with gravity
+      const ghost2 = new Ghost(100, 200, mockSprite);
+      const initialVelocity = ghost2.velocity;
+      ghost2.update(1, 0.6, 12, -12);
+      assertTrue(
+        ghost2.velocity > initialVelocity,
+        'update() applies gravity (velocity increases)',
+        `Before: ${initialVelocity}, After: ${ghost2.velocity}`
+      );
+      
+      // Test 5: Terminal velocity clamping
+      const ghost3 = new Ghost(100, 200, mockSprite);
+      ghost3.velocity = 15; // Above terminal velocity
+      ghost3.update(1, 0.6, 12, -12);
+      assertEqual(ghost3.velocity, 12, 'update() clamps to terminal velocity');
+      
+      // Test 6: Max upward velocity clamping
+      const ghost4 = new Ghost(100, 200, mockSprite);
+      ghost4.velocity = -15; // More negative than max upward
+      ghost4.update(1, 0.6, 12, -12);
+      assertEqual(ghost4.velocity, -12, 'update() clamps to max upward velocity');
+      
+      // Test 7: Position update
+      const ghost5 = new Ghost(100, 200, mockSprite);
+      ghost5.velocity = 5;
+      const initialY = ghost5.y;
+      ghost5.update(1, 0, 12, -12); // No gravity for simple test
+      assertTrue(
+        ghost5.y > initialY,
+        'update() changes position based on velocity',
+        `Before: ${initialY}, After: ${ghost5.y}`
+      );
+      
+      // Test 8: Rotation calculation
+      const ghost6 = new Ghost(100, 200, mockSprite);
+      ghost6.velocity = 5;
+      ghost6.update(1, 0, 12, -12);
+      assertTrue(
+        ghost6.rotation > 0 && ghost6.rotation <= 25,
+        'update() calculates rotation (0 to 25 degrees)',
+        `Rotation: ${ghost6.rotation}`
+      );
+      
+      // Test 9: Reset
+      const ghost7 = new Ghost(100, 200, mockSprite);
+      ghost7.velocity = 5;
+      ghost7.rotation = 15;
+      ghost7.y = 300;
+      ghost7.reset(100, 200);
+      assertEqual(ghost7.y, 200, 'reset() restores Y position');
+      assertEqual(ghost7.velocity, 0, 'reset() clears velocity');
+      assertEqual(ghost7.rotation, 0, 'reset() clears rotation');
+      
+      // Visual test - draw the ghost
+      ctx.fillStyle = '#87CEEB';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw ghost sprite placeholder
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(ghost.x, ghost.y, ghost.width, ghost.height);
+      
+      // Draw hitbox
+      const visualHitbox = ghost.getHitbox();
+      ctx.strokeStyle = '#FF0000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(visualHitbox.x, visualHitbox.y, visualHitbox.width, visualHitbox.height);
+      
+      // Add text
+      ctx.fillStyle = '#000000';
+      ctx.font = '14px Arial';
+      ctx.fillText('Ghost sprite (white)', ghost.x, ghost.y - 10);
+      ctx.fillText('Hitbox (red outline)', visualHitbox.x, visualHitbox.y - 10);
+      
+      // Summary
+      const summaryDiv = document.createElement('div');
+      summaryDiv.style.marginTop = '20px';
+      summaryDiv.style.padding = '10px';
+      summaryDiv.style.backgroundColor = testsFailed === 0 ? '#e8f5e9' : '#ffebee';
+      summaryDiv.style.borderRadius = '5px';
+      summaryDiv.innerHTML = `
+        <h3>Test Summary</h3>
+        <p><strong>Passed:</strong> ${testsPassed} | <strong>Failed:</strong> ${testsFailed}</p>
+        ${testsFailed === 0 ? '<p class="success">✓ All tests passed! Ghost class is working correctly.</p>' : '<p class="error">✗ Some tests failed. Check the results above.</p>'}
+      `;
+      resultsDiv.appendChild(summaryDiv);
+      
+    } catch (error) {
+      addTestResult('Test execution', false, `Error: ${error.message}`);
+      console.error('Test failed:', error);
+    }
+  </script>
+</body>
+</html>

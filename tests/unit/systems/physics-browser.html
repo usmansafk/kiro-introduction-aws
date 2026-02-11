@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhysicsEngine Unit Tests - Flappy Kiro</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #252526;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+    h1 {
+      color: #4ec9b0;
+      border-bottom: 2px solid #4ec9b0;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #569cd6;
+      margin-top: 30px;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 12px;
+      border-left: 4px solid #ccc;
+      background-color: #2d2d30;
+      border-radius: 4px;
+    }
+    .test-result.pass {
+      border-left-color: #4ec9b0;
+      background-color: #1e3a32;
+    }
+    .test-result.fail {
+      border-left-color: #f48771;
+      background-color: #3a1e1e;
+    }
+    .test-name {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+    .test-details {
+      font-size: 12px;
+      color: #858585;
+      margin-top: 5px;
+    }
+    .summary {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #2d2d30;
+      border-radius: 8px;
+      border: 2px solid #4ec9b0;
+    }
+    .summary.has-failures {
+      border-color: #f48771;
+    }
+    .summary h3 {
+      margin-top: 0;
+      color: #4ec9b0;
+    }
+    .summary.has-failures h3 {
+      color: #f48771;
+    }
+    .stats {
+      display: flex;
+      gap: 30px;
+      margin-top: 15px;
+    }
+    .stat {
+      font-size: 18px;
+    }
+    .stat-label {
+      color: #858585;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+    .stat-value {
+      font-weight: bold;
+      font-size: 24px;
+    }
+    .pass-value {
+      color: #4ec9b0;
+    }
+    .fail-value {
+      color: #f48771;
+    }
+    .progress {
+      margin: 20px 0;
+      font-size: 14px;
+      color: #858585;
+    }
+    .requirement {
+      display: inline-block;
+      background-color: #3a3d41;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 11px;
+      margin-right: 5px;
+      color: #ce9178;
+    }
+    .test-group {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 PhysicsEngine Unit Tests</h1>
+    <p>Unit tests for PhysicsEngine system</p>
+    <p><strong>Feature:</strong> flappy-kiro | <strong>Validates:</strong> 
+      <span class="requirement">Req 1.2</span>
+      <span class="requirement">Req 1.1.1</span>
+      <span class="requirement">Req 1.1.3</span>
+      <span class="requirement">Req 1.1.4</span>
+      <span class="requirement">Req 1.1.5</span>
+      <span class="requirement">Req 2.1.4</span>
+      <span class="requirement">Req 2.1.8</span>
+      <span class="requirement">Req 2.1.9</span>
+    </p>
+    
+    <div class="progress" id="progress">Initializing tests...</div>
+    <div id="testResults"></div>
+    <div id="summary"></div>
+  </div>
+  
+  <script type="module">
+    import PhysicsEngine from '../../../js/systems/physics.js';
+    import GameConfig from '../../../js/config.js';
+    
+    const resultsDiv = document.getElementById('testResults');
+    const summaryDiv = document.getElementById('summary');
+    const progressDiv = document.getElementById('progress');
+    
+    let testsPassed = 0;
+    let testsFailed = 0;
+    let totalTests = 0;
+    
+    function addTestResult(testName, passed, details = '', requirement = '') {
+      const resultDiv = document.createElement('div');
+      resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+      
+      const icon = passed ? '✓' : '✗';
+      const reqBadge = requirement ? `<span class="requirement">${requirement}</span>` : '';
+      
+      resultDiv.innerHTML = `
+        <div class="test-name">${icon} ${testName} ${reqBadge}</div>
+        ${details ? `<div class="test-details">${details}</div>` : ''}
+      `;
+      resultsDiv.appendChild(resultDiv);
+      
+      if (passed) testsPassed++;
+      else testsFailed++;
+      totalTests++;
+    }
+    
+    function addTestGroup(groupName) {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'test-group';
+      groupDiv.innerHTML = `<h2>${groupName}</h2>`;
+      resultsDiv.appendChild(groupDiv);
+    }
+    
+    function updateProgress(message) {
+      progressDiv.textContent = message;
+    }
+    
+    function assertEqual(actual, expected, tolerance = 0.00001) {
+      if (typeof actual === 'number' && typeof expected === 'number') {
+        if (Math.abs(actual - expected) > tolerance) {
+          throw new Error(`Expected ${expected}, got ${actual}`);
+        }
+      } else if (actual !== expected) {
+        throw new Error(`Expected ${expected}, got ${actual}`);
+      }
+    }
+    
+    function assertTrue(condition, message = '') {
+      if (!condition) {
+        throw new Error(message || 'Assertion failed');
+      }
+    }
+    
+    function assertGreaterThan(actual, expected) {
+      if (actual <= expected) {
+        throw new Error(`Expected ${actual} > ${expected}`);
+      }
+    }
+    
+    function assertLessThan(actual, expected) {
+      if (actual >= expected) {
+        throw new Error(`Expected ${actual} < ${expected}`);
+      }
+    }
+    
+    function assertGreaterThanOrEqual(actual, expected) {
+      if (actual < expected) {
+        throw new Error(`Expected ${actual} >= ${expected}`);
+      }
+    }
+    
+    function assertLessThanOrEqual(actual, expected) {
+      if (actual > expected) {
+        throw new Error(`Expected ${actual} <= ${expected}`);
+      }
+    }
+    
+    // Run tests
+    async function runTests() {
+      let physics;
+      
+      // Initialization tests
+      addTestGroup('Initialization');
+      updateProgress('Running initialization tests...');
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        assertEqual(physics.gravity, GameConfig.physics.gravity);
+        addTestResult('should load gravity from config', true, '', 'Req 1.2');
+      } catch (error) {
+        addTestResult('should load gravity from config', false, error.message, 'Req 1.2');
+      }
+      
+      try {
+        assertEqual(physics.jumpVelocity, GameConfig.physics.jumpVelocity);
+        addTestResult('should load jump velocity from config', true);
+      } catch (error) {
+        addTestResult('should load jump velocity from config', false, error.message);
+      }
+      
+      try {
+        assertEqual(physics.terminalVelocity, GameConfig.physics.terminalVelocity);
+        addTestResult('should load terminal velocity from config', true, '', 'Req 1.1.4');
+      } catch (error) {
+        addTestResult('should load terminal velocity from config', false, error.message, 'Req 1.1.4');
+      }
+      
+      try {
+        assertEqual(physics.maxUpwardVelocity, GameConfig.physics.maxUpwardVelocity);
+        addTestResult('should load max upward velocity from config', true, '', 'Req 1.1.5');
+      } catch (error) {
+        addTestResult('should load max upward velocity from config', false, error.message, 'Req 1.1.5');
+      }
+      
+      try {
+        assertEqual(physics.pipeSpacing, GameConfig.pipes.spacing);
+        addTestResult('should load pipe spacing from config', true);
+      } catch (error) {
+        addTestResult('should load pipe spacing from config', false, error.message);
+      }
+      
+      try {
+        assertEqual(physics.gapSize, GameConfig.pipes.gapSize);
+        addTestResult('should load gap size from config', true);
+      } catch (error) {
+        addTestResult('should load gap size from config', false, error.message);
+      }
+      
+      try {
+        assertEqual(physics.minGapY, GameConfig.pipes.minGapY);
+        addTestResult('should load min gap Y from config', true, '', 'Req 2.1.4');
+      } catch (error) {
+        addTestResult('should load min gap Y from config', false, error.message, 'Req 2.1.4');
+      }
+      
+      try {
+        assertEqual(physics.maxGapY, GameConfig.pipes.maxGapY);
+        addTestResult('should load max gap Y from config', true, '', 'Req 2.1.4');
+      } catch (error) {
+        addTestResult('should load max gap Y from config', false, error.message, 'Req 2.1.4');
+      }
+      
+      try {
+        assertEqual(physics.pipeSpeed, GameConfig.pipes.baseSpeed);
+        addTestResult('should initialize pipe speed to base speed', true);
+      } catch (error) {
+        addTestResult('should initialize pipe speed to base speed', false, error.message);
+      }
+      
+      try {
+        assertEqual(physics.maxPipeSpeed, GameConfig.pipes.maxSpeed);
+        addTestResult('should load max pipe speed from config', true, '', 'Req 2.1.9');
+      } catch (error) {
+        addTestResult('should load max pipe speed from config', false, error.message, 'Req 2.1.9');
+      }
+      
+      try {
+        assertEqual(physics.speedIncreaseThreshold, GameConfig.pipes.speedIncreaseThreshold);
+        addTestResult('should load speed increase threshold from config', true, '', 'Req 2.1.8');
+      } catch (error) {
+        addTestResult('should load speed increase threshold from config', false, error.message, 'Req 2.1.8');
+      }
+      
+      try {
+        assertEqual(physics.speedIncrement, GameConfig.pipes.speedIncrement);
+        addTestResult('should load speed increment from config', true, '', 'Req 2.1.8');
+      } catch (error) {
+        addTestResult('should load speed increment from config', false, error.message, 'Req 2.1.8');
+      }
+      
+      // applyGravity tests
+      addTestGroup('applyGravity()');
+      updateProgress('Running applyGravity tests...');
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const entity = { velocity: 0 };
+        const deltaTime = 1;
+        physics.applyGravity(entity, deltaTime);
+        assertEqual(entity.velocity, physics.gravity * deltaTime);
+        addTestResult('should increase entity velocity by gravity * deltaTime', true, '', 'Req 1.2, 1.1.3');
+      } catch (error) {
+        addTestResult('should increase entity velocity by gravity * deltaTime', false, error.message, 'Req 1.2, 1.1.3');
+      }
+      
+      try {
+        const entity = { velocity: 0 };
+        const deltaTime = 1;
+        physics.applyGravity(entity, deltaTime);
+        const velocityAfterFrame1 = entity.velocity;
+        physics.applyGravity(entity, deltaTime);
+        assertGreaterThan(entity.velocity, velocityAfterFrame1);
+        addTestResult('should apply gravity over multiple frames', true);
+      } catch (error) {
+        addTestResult('should apply gravity over multiple frames', false, error.message);
+      }
+      
+      try {
+        const entity = { velocity: 15 };
+        const deltaTime = 1;
+        physics.applyGravity(entity, deltaTime);
+        assertEqual(entity.velocity, physics.terminalVelocity);
+        addTestResult('should clamp velocity to terminal velocity', true, '', 'Req 1.1.4');
+      } catch (error) {
+        addTestResult('should clamp velocity to terminal velocity', false, error.message, 'Req 1.1.4');
+      }
+      
+      try {
+        const entity = { velocity: -15 };
+        const deltaTime = 1;
+        physics.applyGravity(entity, deltaTime);
+        assertEqual(entity.velocity, physics.maxUpwardVelocity);
+        addTestResult('should clamp velocity to max upward velocity', true, '', 'Req 1.1.5');
+      } catch (error) {
+        addTestResult('should clamp velocity to max upward velocity', false, error.message, 'Req 1.1.5');
+      }
+      
+      try {
+        const entity = { velocity: 0 };
+        const deltaTime = 0.5;
+        physics.applyGravity(entity, deltaTime);
+        assertEqual(entity.velocity, physics.gravity * deltaTime);
+        addTestResult('should work with fractional delta time', true);
+      } catch (error) {
+        addTestResult('should work with fractional delta time', false, error.message);
+      }
+      
+      // updatePosition tests
+      addTestGroup('updatePosition()');
+      updateProgress('Running updatePosition tests...');
+      
+      try {
+        const entity = { y: 100, velocity: 5 };
+        const deltaTime = 1;
+        physics.updatePosition(entity, deltaTime);
+        assertEqual(entity.y, 105);
+        addTestResult('should update entity Y position by velocity * deltaTime', true, '', 'Req 1.1.1');
+      } catch (error) {
+        addTestResult('should update entity Y position by velocity * deltaTime', false, error.message, 'Req 1.1.1');
+      }
+      
+      try {
+        const entity = { y: 100, velocity: 10 };
+        const deltaTime = 1;
+        physics.updatePosition(entity, deltaTime);
+        assertGreaterThan(entity.y, 100);
+        addTestResult('should move entity downward with positive velocity', true);
+      } catch (error) {
+        addTestResult('should move entity downward with positive velocity', false, error.message);
+      }
+      
+      try {
+        const entity = { y: 100, velocity: -10 };
+        const deltaTime = 1;
+        physics.updatePosition(entity, deltaTime);
+        assertLessThan(entity.y, 100);
+        addTestResult('should move entity upward with negative velocity', true);
+      } catch (error) {
+        addTestResult('should move entity upward with negative velocity', false, error.message);
+      }
+      
+      try {
+        const entity = { y: 100, velocity: 10 };
+        const deltaTime = 0.5;
+        physics.updatePosition(entity, deltaTime);
+        assertEqual(entity.y, 105);
+        addTestResult('should work with fractional delta time', true);
+      } catch (error) {
+        addTestResult('should work with fractional delta time', false, error.message);
+      }
+      
+      try {
+        const entity = { y: 100, velocity: 0 };
+        const deltaTime = 1;
+        physics.updatePosition(entity, deltaTime);
+        assertEqual(entity.y, 100);
+        addTestResult('should not change position when velocity is 0', true);
+      } catch (error) {
+        addTestResult('should not change position when velocity is 0', false, error.message);
+      }
+      
+      // generateGapPosition tests
+      addTestGroup('generateGapPosition()');
+      updateProgress('Running generateGapPosition tests...');
+      
+      try {
+        const gapY = physics.generateGapPosition();
+        assertGreaterThanOrEqual(gapY, physics.minGapY);
+        assertLessThanOrEqual(gapY, physics.maxGapY);
+        addTestResult('should return a value within valid range', true, '', 'Req 2.1.4');
+      } catch (error) {
+        addTestResult('should return a value within valid range', false, error.message, 'Req 2.1.4');
+      }
+      
+      try {
+        const positions = new Set();
+        for (let i = 0; i < 10; i++) {
+          positions.add(physics.generateGapPosition());
+        }
+        assertTrue(positions.size > 1, 'Should generate different values');
+        addTestResult('should generate different values on multiple calls', true);
+      } catch (error) {
+        addTestResult('should generate different values on multiple calls', false, error.message);
+      }
+      
+      try {
+        for (let i = 0; i < 100; i++) {
+          const gapY = physics.generateGapPosition();
+          assertGreaterThanOrEqual(gapY, physics.minGapY);
+        }
+        addTestResult('should never return value below minGapY', true);
+      } catch (error) {
+        addTestResult('should never return value below minGapY', false, error.message);
+      }
+      
+      try {
+        for (let i = 0; i < 100; i++) {
+          const gapY = physics.generateGapPosition();
+          assertLessThanOrEqual(gapY, physics.maxGapY);
+        }
+        addTestResult('should never return value above maxGapY', true);
+      } catch (error) {
+        addTestResult('should never return value above maxGapY', false, error.message);
+      }
+      
+      // increaseDifficulty tests
+      addTestGroup('increaseDifficulty()');
+      updateProgress('Running increaseDifficulty tests...');
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const initialSpeed = physics.pipeSpeed;
+        const thresholdScore = physics.speedIncreaseThreshold;
+        physics.increaseDifficulty(thresholdScore);
+        assertGreaterThan(physics.pipeSpeed, initialSpeed);
+        addTestResult('should increase pipe speed at threshold score', true, '', 'Req 2.1.8');
+      } catch (error) {
+        addTestResult('should increase pipe speed at threshold score', false, error.message, 'Req 2.1.8');
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const initialSpeed = physics.pipeSpeed;
+        const thresholdScore = physics.speedIncreaseThreshold;
+        physics.increaseDifficulty(thresholdScore);
+        assertEqual(physics.pipeSpeed, initialSpeed + physics.speedIncrement);
+        addTestResult('should increase pipe speed by increment amount', true, '', 'Req 2.1.8');
+      } catch (error) {
+        addTestResult('should increase pipe speed by increment amount', false, error.message, 'Req 2.1.8');
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const initialSpeed = physics.pipeSpeed;
+        physics.increaseDifficulty(1);
+        physics.increaseDifficulty(2);
+        physics.increaseDifficulty(3);
+        assertEqual(physics.pipeSpeed, initialSpeed);
+        addTestResult('should not increase speed for non-threshold scores', true);
+      } catch (error) {
+        addTestResult('should not increase speed for non-threshold scores', false, error.message);
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const threshold = physics.speedIncreaseThreshold;
+        const increment = physics.speedIncrement;
+        const baseSpeed = physics.basePipeSpeed;
+        physics.increaseDifficulty(threshold);
+        physics.increaseDifficulty(threshold * 2);
+        assertEqual(physics.pipeSpeed, baseSpeed + increment * 2);
+        addTestResult('should increase speed at multiple thresholds', true);
+      } catch (error) {
+        addTestResult('should increase speed at multiple thresholds', false, error.message);
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        for (let i = 1; i <= 100; i++) {
+          if (i % physics.speedIncreaseThreshold === 0) {
+            physics.increaseDifficulty(i);
+          }
+        }
+        assertLessThanOrEqual(physics.pipeSpeed, physics.maxPipeSpeed);
+        addTestResult('should not exceed max pipe speed', true, '', 'Req 2.1.9');
+      } catch (error) {
+        addTestResult('should not exceed max pipe speed', false, error.message, 'Req 2.1.9');
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        physics.pipeSpeed = physics.maxPipeSpeed - physics.speedIncrement / 2;
+        physics.increaseDifficulty(physics.speedIncreaseThreshold);
+        assertEqual(physics.pipeSpeed, physics.maxPipeSpeed);
+        addTestResult('should clamp to max speed exactly', true, '', 'Req 2.1.9');
+      } catch (error) {
+        addTestResult('should clamp to max speed exactly', false, error.message, 'Req 2.1.9');
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const initialSpeed = physics.pipeSpeed;
+        physics.increaseDifficulty(0);
+        assertEqual(physics.pipeSpeed, initialSpeed);
+        addTestResult('should not increase speed for score of 0', true);
+      } catch (error) {
+        addTestResult('should not increase speed for score of 0', false, error.message);
+      }
+      
+      // resetDifficulty tests
+      addTestGroup('resetDifficulty()');
+      updateProgress('Running resetDifficulty tests...');
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        physics.increaseDifficulty(physics.speedIncreaseThreshold);
+        assertTrue(physics.pipeSpeed > physics.basePipeSpeed);
+        physics.resetDifficulty();
+        assertEqual(physics.pipeSpeed, physics.basePipeSpeed);
+        addTestResult('should reset pipe speed to base speed', true, '', 'Req 2.1.8');
+      } catch (error) {
+        addTestResult('should reset pipe speed to base speed', false, error.message, 'Req 2.1.8');
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        physics.pipeSpeed = physics.maxPipeSpeed;
+        physics.resetDifficulty();
+        assertEqual(physics.pipeSpeed, physics.basePipeSpeed);
+        addTestResult('should reset from max speed', true);
+      } catch (error) {
+        addTestResult('should reset from max speed', false, error.message);
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        physics.resetDifficulty();
+        assertEqual(physics.pipeSpeed, physics.basePipeSpeed);
+        addTestResult('should work when already at base speed', true);
+      } catch (error) {
+        addTestResult('should work when already at base speed', false, error.message);
+      }
+      
+      // Custom Configuration tests
+      addTestGroup('Custom Configuration');
+      updateProgress('Running custom configuration tests...');
+      
+      try {
+        const customConfig = {
+          physics: {
+            gravity: 1.0,
+            jumpVelocity: -15,
+            terminalVelocity: 20,
+            maxUpwardVelocity: -20
+          },
+          pipes: {
+            spacing: 250,
+            gapSize: 180,
+            minGapY: 80,
+            maxGapY: 520,
+            baseSpeed: 3,
+            maxSpeed: 7,
+            speedIncreaseThreshold: 10,
+            speedIncrement: 0.5
+          }
+        };
+        
+        const customPhysics = new PhysicsEngine(customConfig);
+        
+        assertEqual(customPhysics.gravity, 1.0);
+        assertEqual(customPhysics.jumpVelocity, -15);
+        assertEqual(customPhysics.pipeSpacing, 250);
+        assertEqual(customPhysics.gapSize, 180);
+        addTestResult('should accept custom config in constructor', true);
+      } catch (error) {
+        addTestResult('should accept custom config in constructor', false, error.message);
+      }
+      
+      // Integration tests
+      addTestGroup('Integration - Physics and Position Update');
+      updateProgress('Running integration tests...');
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const entity = { y: 100, velocity: 0 };
+        const deltaTime = 1;
+        
+        physics.applyGravity(entity, deltaTime);
+        physics.updatePosition(entity, deltaTime);
+        
+        assertEqual(entity.velocity, physics.gravity);
+        assertEqual(entity.y, 100 + physics.gravity);
+        addTestResult('should apply gravity and update position together', true);
+      } catch (error) {
+        addTestResult('should apply gravity and update position together', false, error.message);
+      }
+      
+      physics = new PhysicsEngine();
+      
+      try {
+        const entity = { y: 100, velocity: 0 };
+        const deltaTime = 1;
+        const initialY = entity.y;
+        
+        for (let i = 0; i < 5; i++) {
+          physics.applyGravity(entity, deltaTime);
+          physics.updatePosition(entity, deltaTime);
+        }
+        
+        assertGreaterThan(entity.y, initialY);
+        assertGreaterThan(entity.velocity, 0);
+        addTestResult('should simulate falling over multiple frames', true);
+      } catch (error) {
+        addTestResult('should simulate falling over multiple frames', false, error.message);
+      }
+      
+      updateProgress('Tests complete!');
+      
+      // Display summary
+      const hasFailures = testsFailed > 0;
+      summaryDiv.className = `summary ${hasFailures ? 'has-failures' : ''}`;
+      summaryDiv.innerHTML = `
+        <h3>${hasFailures ? '❌ Some Tests Failed' : '✅ All Tests Passed'}</h3>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Passed</div>
+            <div class="stat-value pass-value">${testsPassed}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Failed</div>
+            <div class="stat-value fail-value">${testsFailed}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Total</div>
+            <div class="stat-value">${totalTests}</div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Run tests when page loads
+    runTests().catch(error => {
+      console.error('Test execution failed:', error);
+      progressDiv.textContent = `Error: ${error.message}`;
+      progressDiv.style.color = '#f48771';
+    });
+  </script>
+</body>
+</html>

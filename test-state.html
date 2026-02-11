@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StateManager Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #333;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .test-result {
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 4px;
+    }
+    .pass {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .fail {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .state-display {
+      font-weight: bold;
+      color: #007bff;
+    }
+    .score-display {
+      font-size: 18px;
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>StateManager Test Page</h1>
+  
+  <div class="test-section">
+    <h2>Current State</h2>
+    <div class="state-display" id="currentState">MENU</div>
+    <div class="score-display">
+      Score: <span id="score">0</span> | 
+      High Score: <span id="highScore">0</span> | 
+      Invincible: <span id="invincible">No</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <h2>State Transitions</h2>
+    <button onclick="testStateTransition('MENU')">Set MENU</button>
+    <button onclick="testStateTransition('PLAYING')">Set PLAYING</button>
+    <button onclick="testStateTransition('PAUSED')">Set PAUSED</button>
+    <button onclick="testStateTransition('GAME_OVER')">Set GAME_OVER</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Score Management</h2>
+    <button onclick="incrementScore()">Increment Score</button>
+    <button onclick="resetScore()">Reset Score</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Invincibility</h2>
+    <button onclick="startInvincibility()">Start Invincibility</button>
+    <button onclick="updateInvincibility()">Update Frame (x10)</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>Automated Tests</h2>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <div id="testResults"></div>
+  </div>
+  
+  <script type="module">
+    import { StateManager, GameStates } from './js/state.js';
+    
+    // Create a global StateManager instance
+    window.stateManager = new StateManager();
+    window.GameStates = GameStates;
+    
+    // Update display function
+    window.updateDisplay = function() {
+      document.getElementById('currentState').textContent = window.stateManager.currentState;
+      document.getElementById('score').textContent = window.stateManager.score;
+      document.getElementById('highScore').textContent = window.stateManager.highScore;
+      document.getElementById('invincible').textContent = window.stateManager.isInvincible() ? 'Yes' : 'No';
+    };
+    
+    // State transition test
+    window.testStateTransition = function(state) {
+      window.stateManager.setState(GameStates[state]);
+      window.updateDisplay();
+    };
+    
+    // Score management
+    window.incrementScore = function() {
+      window.stateManager.incrementScore();
+      window.updateDisplay();
+    };
+    
+    window.resetScore = function() {
+      window.stateManager.resetScore();
+      window.updateDisplay();
+    };
+    
+    // Invincibility
+    window.startInvincibility = function() {
+      window.stateManager.startInvincibility();
+      window.updateDisplay();
+    };
+    
+    window.updateInvincibility = function() {
+      for (let i = 0; i < 10; i++) {
+        window.stateManager.updateInvincibility();
+      }
+      window.updateDisplay();
+    };
+    
+    // Automated tests
+    window.runAllTests = function() {
+      const results = [];
+      
+      // Test 1: Initial state is MENU
+      results.push({
+        name: 'Initial state is MENU',
+        pass: window.stateManager.currentState === GameStates.MENU
+      });
+      
+      // Test 2: State transitions work
+      window.stateManager.setState(GameStates.PLAYING);
+      results.push({
+        name: 'Transition to PLAYING',
+        pass: window.stateManager.isPlaying()
+      });
+      
+      // Test 3: Score increments
+      const initialScore = window.stateManager.score;
+      window.stateManager.incrementScore();
+      results.push({
+        name: 'Score increments',
+        pass: window.stateManager.score === initialScore + 1
+      });
+      
+      // Test 4: High score updates
+      results.push({
+        name: 'High score updates',
+        pass: window.stateManager.highScore === window.stateManager.score
+      });
+      
+      // Test 5: Score resets
+      window.stateManager.resetScore();
+      results.push({
+        name: 'Score resets to 0',
+        pass: window.stateManager.score === 0
+      });
+      
+      // Test 6: High score persists
+      results.push({
+        name: 'High score persists after reset',
+        pass: window.stateManager.highScore > 0
+      });
+      
+      // Test 7: Invincibility starts
+      window.stateManager.startInvincibility();
+      results.push({
+        name: 'Invincibility starts',
+        pass: window.stateManager.isInvincible()
+      });
+      
+      // Test 8: Invincibility decrements
+      const invincFrames = window.stateManager.invincibilityFrames;
+      window.stateManager.updateInvincibility();
+      results.push({
+        name: 'Invincibility decrements',
+        pass: window.stateManager.invincibilityFrames === invincFrames - 1
+      });
+      
+      // Test 9: State query methods
+      window.stateManager.setState(GameStates.PAUSED);
+      results.push({
+        name: 'isPaused() returns true',
+        pass: window.stateManager.isPaused()
+      });
+      
+      // Test 10: Invalid state rejected
+      const currentState = window.stateManager.currentState;
+      window.stateManager.setState('INVALID');
+      results.push({
+        name: 'Invalid state rejected',
+        pass: window.stateManager.currentState === currentState
+      });
+      
+      // Display results
+      const resultsDiv = document.getElementById('testResults');
+      resultsDiv.innerHTML = results.map(result => 
+        `<div class="test-result ${result.pass ? 'pass' : 'fail'}">
+          ${result.pass ? '✓' : '✗'} ${result.name}
+        </div>`
+      ).join('');
+      
+      const passCount = results.filter(r => r.pass).length;
+      resultsDiv.innerHTML += `<div style="margin-top: 20px; font-weight: bold;">
+        ${passCount} / ${results.length} tests passed
+      </div>`;
+      
+      window.updateDisplay();
+    };
+    
+    // Initialize display
+    window.updateDisplay();
+    
+    console.log('StateManager test page loaded');
+    console.log('StateManager instance:', window.stateManager);
+  </script>
+</body>
+</html>

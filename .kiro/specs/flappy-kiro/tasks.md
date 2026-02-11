@@ -10,7 +10,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
 
 ## Tasks
 
-- [ ] 1. Project setup and configuration
+- [x] 1. Project setup and configuration
   - Create project directory structure (js/, assets/, tests/)
   - Create index.html with canvas element (400x600px)
   - Create styles.css with minimal styling (centered canvas, retro aesthetic)
@@ -19,13 +19,13 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
   - _Requirements: 8.1, 8.3_
 
 - [ ] 2. Core game loop and initialization
-  - [ ] 2.1 Create main.js entry point
+  - [x] 2.1 Create main.js entry point
     - Initialize canvas and 2D context
     - Create Game instance and start game loop
     - Handle window load event
     - _Requirements: 8.4_
   
-  - [ ] 2.2 Implement Game class (game.js)
+  - [x] 2.2 Implement Game class (game.js)
     - Constructor: initialize canvas, context, config, subsystems
     - init() method: load assets, set up event listeners, initialize state
     - gameLoop(timestamp) method: calculate delta time, update, render, request next frame
@@ -33,7 +33,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Frame time clamping to prevent large jumps
     - _Requirements: 6.4, 7.1_
   
-  - [ ] 2.3 Create StateManager class (state.js)
+  - [x] 2.3 Create StateManager class (state.js)
     - Define GameStates enum (MENU, PLAYING, PAUSED, GAME_OVER)
     - Implement state transition methods
     - Track score, high score, invincibility frames
@@ -41,7 +41,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.1.1, 7.1.5, 7.1.6, 7.1.10_
 
 - [ ] 3. Ghost entity and physics system
-  - [ ] 3.1 Implement Ghost class (entities/ghost.js)
+  - [x] 3.1 Implement Ghost class (entities/ghost.js)
     - Constructor: initialize position, velocity, dimensions, hitbox from config
     - getHitbox() method: return collision bounds with offsets
     - jump(jumpVelocity) method: set velocity to jump value
@@ -50,7 +50,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Rotation calculation for visual tilt effect
     - _Requirements: 1.1, 1.3, 1.4, 1.5, 1.1.2, 1.1.6_
   
-  - [ ]* 3.2 Write property test for Ghost physics
+  - [x] 3.2 Write property test for Ghost physics
     - **Property 1: Jump input sets upward velocity**
     - **Property 2: Gravity continuously accelerates ghost downward**
     - **Property 3: Terminal velocity limits falling speed**
@@ -58,7 +58,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - **Property 5: Position updates by velocity integration**
     - **Validates: Requirements 1.1.2, 1.2, 1.1.3, 1.1.4, 1.1.5, 1.1.6**
   
-  - [ ] 3.3 Implement PhysicsEngine class (systems/physics.js)
+  - [x] 3.3 Implement PhysicsEngine class (systems/physics.js)
     - Constructor: load physics constants from config
     - applyGravity(entity, deltaTime) method
     - updatePosition(entity, deltaTime) method
@@ -67,7 +67,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - resetDifficulty() method: reset to base speed
     - _Requirements: 1.2, 1.1.1, 1.1.3, 1.1.4, 1.1.5, 2.1.4, 2.1.8, 2.1.9_
   
-  - [ ]* 3.4 Write property test for PhysicsEngine
+  - [ ] 3.4 Write property test for PhysicsEngine
     - **Property 6: Frame-rate independence through delta time**
     - **Property 10: Gap positions are within valid range**
     - **Property 11: Difficulty increases at score thresholds**
@@ -75,7 +75,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - **Validates: Requirements 1.1.7, 2.1.4, 2.1.5, 2.1.8, 2.1.9**
 
 - [ ] 4. Pipe obstacles and generation
-  - [ ] 4.1 Implement Pipe class (entities/pipe.js)
+  - [x] 4.1 Implement Pipe class (entities/pipe.js)
     - Constructor: initialize position, gap, dimensions from config
     - Calculate top and bottom pipe heights
     - getTopHitbox() and getBottomHitbox() methods
@@ -86,19 +86,19 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - reset(x, gapY, gapSize) method: reset for object pooling
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.1.1, 2.1.2, 2.1.3, 2.1.7_
   
-  - [ ]* 4.2 Write property test for Pipe movement
+  - [ ] 4.2 Write property test for Pipe movement
     - **Property 7: Pipes move at current speed**
     - **Property 8: Off-screen pipes are removed**
     - **Property 9: Pipes are spaced correctly**
     - **Validates: Requirements 2.3, 2.4, 2.1.2, 2.1.7**
   
-  - [ ] 4.3 Implement pipe generation in Game class
+  - [x] 4.3 Implement pipe generation in Game class
     - generatePipes() method: spawn new pipes at correct spacing
     - updatePipes(deltaTime) method: move pipes, check scoring, remove off-screen
     - Track last pipe position for spacing calculation
     - _Requirements: 2.1, 2.2, 2.1.2_
   
-  - [ ]* 4.4 Write unit tests for pipe generation
+  - [ ] 4.4 Write unit tests for pipe generation
     - Test pipe spawning at correct intervals
     - Test pipe removal when off-screen
     - Test gap position randomization
@@ -111,7 +111,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
   - Ask user if questions arise
 
 - [ ] 6. Collision detection system
-  - [ ] 6.1 Implement CollisionSystem class (systems/collision.js)
+  - [x] 6.1 Implement CollisionSystem class (systems/collision.js)
     - getGhostCircle(ghost) method: calculate circular collision bounds
     - checkCircleRectIntersection(circle, rect) method: circle-rectangle collision
     - checkRectIntersection(rect1, rect2) method: rectangular collision fallback
@@ -122,34 +122,34 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - debugDrawCollisionBounds(ctx, ghost, pipes) method: visual debugging
     - _Requirements: 3.1, 3.2, 3.1.1, 3.1.2, 3.1.3, 3.1.4, 3.1.5, 3.1.6, 3.1.7, 3.1.8, 3.1.9_
   
-  - [ ]* 6.2 Write property tests for collision detection
+  - [ ] 6.2 Write property tests for collision detection
     - **Property 13: Rectangular intersection detects overlapping hitboxes**
     - **Property 14: Ghost-pipe collision detected when hitboxes intersect**
     - **Property 15: Ceiling boundary collision detected**
     - **Property 16: Ground boundary collision detected**
     - **Validates: Requirements 3.1.4, 3.1, 3.1.9, 1.4, 3.2, 3.1.7, 1.3, 3.2, 3.1.8**
   
-  - [ ] 6.3 Integrate collision detection into game loop
+  - [x] 6.3 Integrate collision detection into game loop
     - checkCollisions() method in Game class
     - Call collision system with current entities
     - Handle collision result (trigger game over)
     - Respect invincibility frames
     - _Requirements: 3.1, 3.2, 3.3, 3.1.12_
   
-  - [ ]* 6.4 Write property tests for collision integration
+  - [ ] 6.4 Write property tests for collision integration
     - **Property 17: Collision triggers game over state**
     - **Property 18: Invincibility prevents collision detection**
     - **Property 19: Invincibility expires after duration**
     - **Validates: Requirements 3.3, 7.4, 3.1.12, 3.1.13**
 
 - [ ] 7. Score tracking and persistence
-  - [ ] 7.1 Implement score tracking in StateManager
+  - [x] 7.1 Implement score tracking in StateManager
     - incrementScore() method: increase score by 1
     - resetScore() method: set score to 0
     - Update high score when score exceeds it
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
   
-  - [ ] 7.2 Implement StorageManager class (storage.js)
+  - [x] 7.2 Implement StorageManager class (storage.js)
     - loadHighScore() method: read from localStorage with error handling
     - saveHighScore(score) method: write to localStorage with error handling
     - clearHighScore() method: remove from localStorage
@@ -157,7 +157,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Handle localStorage unavailable gracefully (return 0)
     - _Requirements: 4.6, 7.1.15, 7.1.16, 7.1.17, 7.1.18_
   
-  - [ ]* 7.3 Write property tests for score tracking
+  - [ ] 7.3 Write property tests for score tracking
     - **Property 20: Score increments when passing pipes**
     - **Property 21: High score updates when current score exceeds it**
     - **Property 22: Score resets to zero on new game**
@@ -165,7 +165,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - **Property 24: Local storage fallback to zero**
     - **Validates: Requirements 4.1, 4.4, 7.1.16, 4.5, 4.6, 7.1.18**
   
-  - [ ] 7.4 Integrate score tracking into game loop
+  - [x] 7.4 Integrate score tracking into game loop
     - Check if ghost passed pipe in updatePipes()
     - Increment score and mark pipe as scored
     - Trigger difficulty increase
@@ -174,7 +174,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - _Requirements: 4.1, 4.4, 2.1.8_
 
 - [ ] 8. Input handling system
-  - [ ] 8.1 Implement InputHandler class (input.js)
+  - [x] 8.1 Implement InputHandler class (input.js)
     - Constructor: set up event listeners for keyboard, mouse, touch
     - handleJumpOrStart() method: trigger jump or start based on state
     - handlePause() method: toggle pause state
@@ -183,7 +183,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Prevent default behavior for spacebar (no page scroll)
     - _Requirements: 1.1, 7.2, 7.5, 7.1.4, 7.1.6, 7.1.9, 7.1.14, 8.2_
   
-  - [ ] 8.2 Integrate input handling into Game class
+  - [x] 8.2 Integrate input handling into Game class
     - Wire input callbacks to game methods
     - handleInput() method: route input based on current state
     - startGame() method: transition to playing, reset entities, start invincibility
@@ -192,7 +192,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - handlePauseInput() method: toggle pause state
     - _Requirements: 1.1, 7.2, 7.5, 7.1.6, 7.1.9_
   
-  - [ ]* 8.3 Write property tests for input handling
+  - [ ] 8.3 Write property tests for input handling
     - **Property 25: Menu to playing transition on input**
     - **Property 26: Game over to playing transition restarts game**
     - **Property 27: Playing to paused transition freezes updates**
@@ -209,7 +209,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
   - Ask user if questions arise
 
 - [ ] 10. Rendering system
-  - [ ] 10.1 Implement Renderer class (systems/renderer.js)
+  - [x] 10.1 Implement Renderer class (systems/renderer.js)
     - Constructor: initialize context, canvas, colors from config
     - clear() method: fill background color
     - renderGhost(ghost) method: draw sprite with rotation
@@ -221,14 +221,14 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - applyScreenShake(offset) method: translate context for shake effect
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 7.1.1, 7.1.2, 7.1.3, 7.1.8, 7.1.10, 7.1.11, 7.1.12, 7.1.13_
   
-  - [ ] 10.2 Implement render phase in Game class
+  - [x] 10.2 Implement render phase in Game class
     - render() method: orchestrate all rendering
     - renderPlaying() method: render game entities and UI
     - Apply screen shake offset before rendering
     - Render based on current state (menu, playing, paused, game_over)
     - _Requirements: 6.4, 6.5, 7.1.1, 7.1.8, 7.1.10_
   
-  - [ ]* 10.3 Write unit tests for rendering
+  - [ ] 10.3 Write unit tests for rendering
     - Test menu screen displays correct elements
     - Test game over screen shows final score
     - Test pause overlay appears correctly
@@ -236,7 +236,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - _Requirements: 6.2, 7.1.1, 7.1.8, 7.1.10_
 
 - [ ] 11. Audio system
-  - [ ] 11.1 Implement AudioManager class (systems/audio.js)
+  - [x] 11.1 Implement AudioManager class (systems/audio.js)
     - Constructor: initialize sounds object, muted flag, volume
     - loadSound(name, path) method: create Audio element
     - playSound(name) method: clone and play sound with error handling
@@ -252,7 +252,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Add error handling for audio playback failures
     - _Requirements: 5.1, 5.2, 5.3, 5.1.1, 5.1.3_
   
-  - [ ]* 11.3 Write unit tests for audio system
+  - [ ] 11.3 Write unit tests for audio system
     - Test sound loading from correct paths
     - Test mute functionality
     - Test volume control
@@ -283,7 +283,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Enforce maximum particle count from config
     - _Requirements: 5.1.11, 5.1.12, 5.1.13, 5.1.17_
   
-  - [ ]* 12.4 Write property tests for particle system
+  - [ ] 12.4 Write property tests for particle system
     - **Property 33: Particles are generated during gameplay**
     - **Property 34: Particles fade and die**
     - **Property 35: Dead particles are removed**
@@ -304,7 +304,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Render indicators with fading opacity
     - _Requirements: 5.1.14, 5.1.15, 5.1.16, 5.1.17_
   
-  - [ ]* 13.3 Write property tests for score indicators
+  - [ ] 13.3 Write property tests for score indicators
     - **Property 36: Score indicators created on score increment**
     - **Property 37: Score indicators float upward and fade**
     - **Property 38: Dead score indicators are removed**
@@ -324,7 +324,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Update shake each frame
     - _Requirements: 5.1.8, 5.1.10_
   
-  - [ ]* 14.3 Write property tests for screen shake
+  - [ ] 14.3 Write property tests for screen shake
     - **Property 31: Screen shake activates on collision**
     - **Property 32: Screen shake intensity decreases over time**
     - **Validates: Requirements 5.1.8, 5.1.10**
@@ -349,7 +349,7 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Render indicator during invincibility
     - _Requirements: 3.1.11, 3.1.12, 3.1.13, 3.1.14_
   
-  - [ ]* 15.4 Write property test for invincibility
+  - [ ] 15.4 Write property test for invincibility
     - **Property 30: Invincibility activates on game start**
     - **Validates: Requirements 3.1.11**
 
@@ -461,12 +461,12 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Resume on input
     - _Requirements: 7.1.6, 7.1.7, 7.1.8, 7.1.9_
   
-  - [ ]* 21.3 Write property tests for state management
+  - [ ] 21.3 Write property tests for state management
     - **Property 29: Playing state updates all entities**
     - **Validates: Requirements 7.3**
 
 - [ ] 22. Final integration and wiring
-  - [ ] 22.1 Wire all systems together in Game class
+  - [x] 22.1 Wire all systems together in Game class
     - Connect input handler to game methods
     - Connect state manager to all subsystems
     - Connect audio manager to game events
@@ -488,18 +488,18 @@ This implementation plan builds a browser-based Flappy Bird clone using vanilla 
     - Stop game loop (if needed)
 
 - [ ] 23. Testing and validation
-  - [ ]* 23.1 Run all property-based tests
+  - [ ] 23.1 Run all property-based tests
     - Execute all property tests with 100 iterations minimum
     - Verify all properties pass
     - Fix any failing properties
   
-  - [ ]* 23.2 Run all unit tests
+  - [ ] 23.2 Run all unit tests
     - Execute all unit tests
     - Verify edge cases are handled
     - Verify error conditions are handled
     - Fix any failing tests
   
-  - [ ]* 23.3 Integration testing
+  - [ ] 23.3 Integration testing
     - Test complete game flow from start to finish
     - Test all input methods (keyboard, mouse, touch)
     - Test state transitions

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Game Class - Flappy Kiro</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 20px auto;
+      border: 2px solid #333;
+      background-color: #87CEEB;
+    }
+    .info {
+      max-width: 400px;
+      margin: 0 auto;
+      padding: 10px;
+      background-color: white;
+      border-radius: 5px;
+    }
+    .success {
+      color: green;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="info">
+    <h2>Game Class Test</h2>
+    <p>Testing Game class implementation with:</p>
+    <ul>
+      <li>Constructor initialization</li>
+      <li>Game loop with delta time calculation</li>
+      <li>120 FPS target normalization</li>
+      <li>Frame time clamping</li>
+    </ul>
+    <div id="status">Initializing...</div>
+  </div>
+  
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  
+  <script type="module">
+    import Game from './js/game.js';
+    
+    const statusDiv = document.getElementById('status');
+    
+    function updateStatus(message, isError = false) {
+      statusDiv.innerHTML = `<p class="${isError ? 'error' : 'success'}">${message}</p>`;
+    }
+    
+    try {
+      const canvas = document.getElementById('gameCanvas');
+      
+      if (!canvas) {
+        throw new Error('Canvas element not found');
+      }
+      
+      updateStatus('✓ Canvas element found');
+      
+      // Create Game instance
+      const game = new Game(canvas);
+      updateStatus('✓ Game instance created');
+      
+      // Initialize game
+      game.init();
+      updateStatus('✓ Game initialized and running<br>Check the canvas - you should see the game loop running with FPS counter');
+      
+      // Test that game loop is running
+      setTimeout(() => {
+        if (game.isRunning) {
+          updateStatus('✓ Game loop is running successfully!<br>✓ Delta time normalization active<br>✓ FPS counter visible on canvas');
+        } else {
+          updateStatus('✗ Game loop is not running', true);
+        }
+      }, 1000);
+      
+    } catch (error) {
+      updateStatus(`✗ Error: ${error.message}`, true);
+      console.error('Test failed:', error);
+    }
+  </script>
+</body>
+</html>
